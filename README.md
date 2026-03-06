@@ -1,73 +1,85 @@
-﻿# ChatGPT ↔ Gemini 웹 구독 중계기 (DB + Turn Token)
+﻿# ChatGPT ↔ Gemini 웹 브리지
 
-API 없이 웹 구독(브라우저) 기반으로 두 모델의 응답을 번갈아 중계할 때 사용할 수 있는 로컬 오케스트레이터 골격입니다.
+로컬 PC에서 하나의 Chrome 창과 하나의 공유 프로필을 사용해, ChatGPT 웹과 Gemini 웹이 번갈아 대화하도록 만드는 자동화 도구입니다.
 
-> 주의: 각 서비스의 이용약관/자동화 정책을 반드시 확인하세요. 이 저장소는 상태관리(토큰/로그) 중심의 예시이며, 실제 브라우저 자동화는 정책 준수 범위에서 구현해야 합니다.
+구성은 세 층입니다.
 
-## 핵심 아이디어
+- `orchestrator.py`: SQLite 기반 턴 상태와 대화 로그 관리
+- `web_bridge.py`: Playwright로 실제 웹앱 조작
+- `dashboard_server.py` + `dashboard/index.html`: 로컬 HTML 대시보드
 
-- `SQLite`에 대화 로그와 현재 차례(`current_turn`)를 저장
-- 워커 A/B(예: `gemini_worker.py`, `chatgpt_worker.py`)는 DB를 폴링
-- 자신의 차례일 때만 마지막 상대 메시지를 읽고 응답 생성
-- 응답 저장 후 차례를 상대에게 넘김
+## 전제 조건
 
-## 빠른 시작
+- Windows 로컬 PC
+- Python 3.10+
+- Chrome 설치
+- ChatGPT 웹, Gemini 웹에 각각 로그인 가능한 계정
+- 브라우저 자동화 사용은 각 서비스 정책을 스스로 확인하고 감수할 것
 
-```bash
-python3 orchestrator.py init --first-turn GEMINI --seed "토론 주제: AI 자동화의 윤리적 한계"
-python3 orchestrator.py status
-python3 orchestrator.py pull --worker GEMINI
-python3 orchestrator.py push --worker GEMINI --message "Gemini의 첫 응답"
-python3 orchestrator.py pull --worker CHATGPT
-python3 orchestrator.py push --worker CHATGPT --message "ChatGPT의 반론"
-python3 orchestrator.py export --format markdown --output dialogue.md
+## 설치
+
+```powershell
+python -m pip install -r requirements.txt
+python -m playwright install
 ```
 
-## 워커 동작 규약
+## 대시보드 실행
 
-1. `pull --worker <GEMINI|CHATGPT>`
-   - 자신의 차례면 입력 메시지를 반환
-   - 아니면 `WAIT` 반환
-2. 응답을 만들었으면 `push --worker <...> --message "..."`
-   - 메시지 로그 저장
-   - 차례를 상대에게 토글
-
-## 스키마
-
-- `state`
-  - `id=1` 고정
-  - `current_turn`: `GEMINI | CHATGPT`
-  - `turn_count`: 누적 turn 수
-  - `max_turns`: 종료 제한
-  - `status`: `running | finished`
-- `messages`
-  - `sender`: `SYSTEM | GEMINI | CHATGPT`
-  - `content`: 본문
-  - `created_at`: ISO timestamp
-
-## 확장 포인트
-
-- Playwright/Selenium 워커에서 `pull/push` 호출
-- Redis로 교체 시 `state`를 키-값으로 매핑
-- `push` 시 금칙어/종료키워드 감지 훅 추가
-
-## GitHub에 올릴 수 있나요?
-
-네, 가능합니다. 이 저장소는 일반 Python/SQLite 스크립트 기반이라 GitHub에 그대로 업로드해도 됩니다.
-
-권장 절차:
-
-```bash
-git init
-git add README.md orchestrator.py .gitignore
-git commit -m "Add local orchestrator"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
+```powershell
+python dashboard_server.py --config bridge_config.json --host 127.0.0.1 --port 8765
 ```
 
-업로드 시 주의:
+브라우저에서 아래 주소를 엽니다.
 
-- `orchestrator.db`, `dialogue.md` 같은 실행 산출물은 `.gitignore`로 제외
-- 쿠키/세션 파일, 계정 정보, 자동화 도중 저장된 민감 데이터는 커밋 금지
-- 서비스 자동화는 각 플랫폼 이용약관을 먼저 확인
+- [http://127.0.0.1:8765](http://127.0.0.1:8765)
+
+## 사용 방식
+
+이제 기본 동작은 다음과 같습니다.
+
+- 하나의 Chrome 창만 사용
+- `profiles/shared` 하나만 사용
+- ChatGPT 탭 1개, Gemini 탭 1개를 같은 창 안에 유지
+- 두 탭을 번갈아 사용해 대화를 진행
+
+## 사용 순서
+
+1. 대시보드 실행
+2. `Provider Login`에서 `ChatGPT 브라우저 열기`
+3. 열린 공유 Chrome 창의 ChatGPT 탭에서 로그인
+4. 대시보드에서 `설정 완료`
+5. `Gemini 브라우저 열기`
+6. 같은 공유 Chrome 창의 Gemini 탭에서 로그인
+7. 대시보드에서 `설정 완료`
+8. seed와 turn 설정 입력
+9. `실행`
+
+## 수동 CLI도 가능
+
+```powershell
+python web_bridge.py --config bridge_config.json setup --provider CHATGPT
+python web_bridge.py --config bridge_config.json setup --provider GEMINI
+python web_bridge.py --config bridge_config.json run --first-turn GEMINI --max-turns 10 --seed "토론 주제: AI 자동화의 윤리적 한계"
+```
+
+## 주요 파일
+
+- `bridge_config.json`: 실제 런타임 설정
+- `bridge_config.example.json`: 예시 설정
+- `profiles/shared`: 공유 Chrome 프로필
+- `orchestrator.db`: 현재 상태 DB
+- `dialogue.md`: export 결과
+- `artifacts/`: 실패 시 스크린샷
+
+## 실패 시 점검
+
+- 사이트 DOM이 바뀌면 `bridge_config.json`의 selector 목록 수정
+- 로그인 세션이 풀리면 대시보드에서 다시 브라우저 열기
+- 응답이 너무 늦으면 `response_timeout_seconds`, `stability_window_seconds` 증가
+- 실행 오류는 대시보드 로그와 `artifacts/` 스크린샷 확인
+
+## 주의
+
+- 이 도구는 API가 아니라 웹 UI 자동화입니다.
+- 사이트 구조 변경에 따라 셀렉터를 주기적으로 조정해야 할 수 있습니다.
+- 일반 브라우징 프로필과 섞어 쓰지 말고 `profiles/shared` 전용 프로필을 유지하는 편이 안전합니다.

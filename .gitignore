@@ -1,7 +1,16 @@
-﻿# Local runtime artifacts
+# Local runtime artifacts
 orchestrator.db
 dialogue.md
+bridge_config.json
 
-# Python cache
+# Browser profiles and automation artifacts
+profiles/
+artifacts/
+
+# Python cache / environments
 __pycache__/
 *.pyc
+.venv/
+venv/
+
+.vendor/

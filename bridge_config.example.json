@@ -1,0 +1,67 @@
+﻿{
+    "db_path":  "orchestrator.db",
+    "export_path":  "dialogue.md",
+    "poll_interval_seconds":  3,
+    "response_timeout_seconds":  240,
+    "stability_window_seconds":  6,
+    "providers":  {
+                      "CHATGPT":  {
+                                      "url":  "https://chatgpt.com/",
+                                      "browser_executable":  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+                                      "profile_dir":  "profiles/shared",
+                                      "headless":  false,
+                                      "new_chat_on_start":  true,
+                                      "allow_manual_login":  true,
+                                      "composer_selectors":  [
+                                                                 "#prompt-textarea",
+                                                                 "textarea[placeholder*=\u0027Message\u0027]",
+                                                                 "textarea[data-testid=\u0027prompt-textarea\u0027]",
+                                                                 "div[contenteditable=\u0027true\u0027][data-testid=\u0027composer-input\u0027]"
+                                                             ],
+                                      "send_button_selectors":  [
+                                                                    "button[data-testid=\u0027send-button\u0027]",
+                                                                    "button[aria-label*=\u0027Send prompt\u0027]",
+                                                                    "button[aria-label*=\u0027Send message\u0027]"
+                                                                ],
+                                      "assistant_message_selectors":  [
+                                                                          "[data-message-author-role=\u0027assistant\u0027]",
+                                                                          "article [data-message-author-role=\u0027assistant\u0027]"
+                                                                      ],
+                                      "new_chat_selectors":  [
+                                                                 "a[href=\u0027/\u0027]",
+                                                                 "button[aria-label*=\u0027New chat\u0027]"
+                                                             ],
+                                      "submit_shortcut":  "Control+Enter"
+                                  },
+                      "GEMINI":  {
+                                     "url":  "https://gemini.google.com/app",
+                                     "browser_executable":  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+                                     "profile_dir":  "profiles/shared",
+                                     "headless":  false,
+                                     "new_chat_on_start":  true,
+                                     "allow_manual_login":  true,
+                                     "composer_selectors":  [
+                                                                "rich-textarea .ql-editor",
+                                                                "div.ql-editor",
+                                                                "div[contenteditable=\u0027true\u0027][role=\u0027textbox\u0027]",
+                                                                "textarea"
+                                                            ],
+                                     "send_button_selectors":  [
+                                                                   "button[aria-label*=\u0027Send message\u0027]",
+                                                                   "button[aria-label*=\u0027Send\u0027]",
+                                                                   "button.send-button"
+                                                               ],
+                                     "assistant_message_selectors":  [
+                                                                         "message-content .markdown",
+                                                                         "model-response .markdown",
+                                                                         "model-response",
+                                                                         "message-content"
+                                                                     ],
+                                     "new_chat_selectors":  [
+                                                                "button[aria-label*=\u0027New chat\u0027]",
+                                                                "a[href=\u0027/app\u0027]"
+                                                            ],
+                                     "submit_shortcut":  "Control+Enter"
+                                 }
+                  }
+}

@@ -8,7 +8,7 @@
                       "CHATGPT":  {
                                       "url":  "https://chatgpt.com/",
                                       "browser_executable":  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-                                      "profile_dir":  "profiles/shared",
+                                      "profile_dir":  "C:/Users/soulr/AppData/Local/Google/Chrome/User Data",
                                       "headless":  false,
                                       "new_chat_on_start":  true,
                                       "allow_manual_login":  true,
@@ -31,12 +31,13 @@
                                                                  "a[href=\u0027/\u0027]",
                                                                  "button[aria-label*=\u0027New chat\u0027]"
                                                              ],
-                                      "submit_shortcut":  "Control+Enter"
+                                      "submit_shortcut":  "Control+Enter",
+                                      "profile_name":  "Profile 2"
                                   },
                       "GEMINI":  {
                                      "url":  "https://gemini.google.com/app",
                                      "browser_executable":  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-                                     "profile_dir":  "profiles/shared",
+                                     "profile_dir":  "C:/Users/soulr/AppData/Local/Google/Chrome/User Data",
                                      "headless":  false,
                                      "new_chat_on_start":  true,
                                      "allow_manual_login":  true,
@@ -61,7 +62,8 @@
                                                                 "button[aria-label*=\u0027New chat\u0027]",
                                                                 "a[href=\u0027/app\u0027]"
                                                             ],
-                                     "submit_shortcut":  "Control+Enter"
+                                     "submit_shortcut":  "Control+Enter",
+                                     "profile_name":  "Profile 2"
                                  }
                   }
 }

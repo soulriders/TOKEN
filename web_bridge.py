@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
@@ -107,6 +107,7 @@ class ProviderConfig:
     url: str
     browser_executable: Path
     profile_dir: Path
+    profile_name: str = "Default"
     headless: bool = False
     new_chat_on_start: bool = True
     allow_manual_login: bool = True
@@ -317,10 +318,10 @@ class BrowserSessionPool:
     def __init__(self, runtime: BridgeConfig, playwright: Any) -> None:
         self.runtime = runtime
         self.playwright = playwright
-        self.contexts: dict[tuple[str, str], BrowserContext] = {}
+        self.contexts: dict[tuple[str, str, str], BrowserContext] = {}
 
     def attach_client(self, client: BrowserChatClient) -> None:
-        key = (str(client.config.browser_executable), str(client.config.profile_dir))
+        key = (str(client.config.browser_executable), str(client.config.profile_dir), client.config.profile_name)
         context = self.contexts.get(key)
         if context is None:
             client.config.profile_dir.mkdir(parents=True, exist_ok=True)
@@ -329,7 +330,7 @@ class BrowserSessionPool:
                 executable_path=str(client.config.browser_executable),
                 headless=client.config.headless,
                 viewport={"width": 1440, "height": 1024},
-                args=["--disable-blink-features=AutomationControlled"],
+                args=["--disable-blink-features=AutomationControlled", f"--profile-directory={client.config.profile_name}"],
             )
             self.contexts[key] = context
         page = context.new_page()
@@ -441,6 +442,7 @@ def provider_from_raw(base_dir: Path, provider_name: str, raw: dict[str, Any]) -
         url=raw.get("url", DEFAULT_URLS[provider_name]),
         browser_executable=pick_browser_path(provider_name, raw.get("browser_executable")),
         profile_dir=normalize_path(base_dir, raw.get("profile_dir", str(DEFAULT_PROFILE_DIRS[provider_name]))),
+        profile_name=raw.get("profile_name", "Default"),
         headless=bool(raw.get("headless", False)),
         new_chat_on_start=bool(raw.get("new_chat_on_start", True)),
         allow_manual_login=bool(raw.get("allow_manual_login", True)),
@@ -504,6 +506,7 @@ def main() -> None:
                     "url": provider.url,
                     "browser_executable": str(provider.browser_executable),
                     "profile_dir": str(provider.profile_dir),
+                    "profile_name": provider.profile_name,
                 }
                 for name, provider in config.providers.items()
             },

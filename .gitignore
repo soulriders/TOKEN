@@ -1,0 +1,7 @@
+﻿# Local runtime artifacts
+orchestrator.db
+dialogue.md
+
+# Python cache
+__pycache__/
+*.pyc
